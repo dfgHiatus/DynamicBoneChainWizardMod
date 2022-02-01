@@ -27,13 +27,14 @@ namespace Wizard
 		public static Slot WizardSlot;
 
 		// DynBoneWizard Stuff
-		public readonly List<string> listOfFullNames = new List<string>();
-		public readonly List<string> listOfPrefixes;
-		public readonly List<string> listOfSuffixes;
-		public readonly List<string> listOfSingletons;
+		public List<string> listOfFullNames = new List<string>();
 
-		public readonly ValueField<UseTagMode> useTagMode;
-		public readonly ReferenceField<Slot> ProcessRoot;
+		public List<string> listOfPrefixes = new List<string>();
+		public List<string> listOfSuffixes = new List<string>();
+		public List<string> listOfSingletons = new List<string>();
+
+		public ValueField<UseTagMode> useTagMode;
+		public ReferenceField<Slot> ProcessRoot;
 		public readonly TextField tag;
 		public readonly Text resultsText;
 		private int _count;
@@ -41,55 +42,55 @@ namespace Wizard
 		private LocaleString _text;
 		private Slot _scrollAreaRoot;
 		private UIBuilder _listBuilder;
-		private bool UpdateList;
 
-		[DefaultValue(true)]
 		public readonly ValueField<bool> IgnoreInactive;
-
-		[DefaultValue(true)]
 		public readonly ValueField<bool> IgnoreDisabled;
-
-		[DefaultValue(true)]
 		public readonly ValueField<bool> IgnoreNonPersistent;
-
-		[DefaultValue(0.2f)]
 		public readonly ValueField<float> Inertia;
-
-		[DefaultValue(2.0f)]
 		public readonly ValueField<float> InertiaForce;
-
-		[DefaultValue(5.0f)]
 		public readonly ValueField<float> Damping;
-
-		[DefaultValue(100.0f)]
 		public readonly ValueField<float> Elasticity;
-
-		[DefaultValue(0.2f)]
 		public readonly ValueField<float> Stiffness;
-
-		[DefaultValue(false)]
 		public readonly ValueField<bool> IsGrabbable;
 
-		public static DynamicBoneWizard GetOrCreateWizard()
-		{
-			if (_Wizard != null)
-			{
-				WizardSlot.PositionInFrontOfUser(float3.Backward, distance: 1f);
-				return _Wizard;
-			}
-			else
-			{
-				return new DynamicBoneWizard();
-			}
-		}
-
-		protected DynamicBoneWizard()
+		public DynamicBoneWizard()
         {
+			UniLog.Log("Before Construction");
 			_Wizard = this;
+			UniLog.Log("Start slots");
 			WizardSlot = Engine.Current.WorldManager.FocusedWorld.RootSlot.AddSlot("Dynamic Bone Wizard");
 			WizardSlot.GetComponentInChildrenOrParents<Canvas>()?.MarkDeveloper();
 			WizardSlot.PersistentSelf = false;
+			UniLog.Log("End slots");
 
+			UniLog.Log("Start Data");
+			Slot Data = WizardSlot.AddSlot("Data");
+			IgnoreInactive = Data.AddSlot("IgnoreInactive").AttachComponent<ValueField<bool>>();
+			IgnoreInactive.Value.Value = true;
+			IgnoreDisabled = Data.AddSlot("IgnoreDisabled").AttachComponent<ValueField<bool>>();
+			IgnoreDisabled.Value.Value = true;
+			IgnoreNonPersistent = Data.AddSlot("IgnoreNonPersistent").AttachComponent<ValueField<bool>>();
+			IgnoreNonPersistent.Value.Value = true;
+			Inertia = Data.AddSlot("Inertia").AttachComponent<ValueField<float>>();
+			Inertia.Value.Value = 0.2f;
+			InertiaForce = Data.AddSlot("InertiaForce").AttachComponent<ValueField<float>>();
+			Inertia.Value.Value = 2.0f;
+			Damping = Data.AddSlot("Damping").AttachComponent<ValueField<float>>();
+			Inertia.Value.Value = 5.0f;
+			Elasticity = Data.AddSlot("Elasticity").AttachComponent<ValueField<float>>();
+			Inertia.Value.Value = 100.0f;
+			Stiffness = Data.AddSlot("Stiffness").AttachComponent<ValueField<float>>();
+			Inertia.Value.Value = 0.2f;
+			IsGrabbable = Data.AddSlot("IsGrabbable").AttachComponent<ValueField<bool>>();
+			IsGrabbable.Value.Value = false;
+
+			useTagMode = Data.AddSlot("useTagMode").AttachComponent<ValueField<UseTagMode>>();
+			useTagMode.Value.Value = UseTagMode.IgnoreTag;
+			ProcessRoot = Data.AddSlot("WizardSlot").AttachComponent<ReferenceField<Slot>>();
+			ProcessRoot.Reference.Target = null;
+			UniLog.Log("End Data");
+
+			UniLog.Log("Start list 1");
 			listOfSingletons.AddRange(new string[]
 			{
 					"<DynBone>",
@@ -98,7 +99,9 @@ namespace Wizard
 					"leftbooty",
 					"rightbooty"
 			});
+			UniLog.Log("End list 1");
 
+			UniLog.Log("Start list 2");
 			listOfPrefixes.AddRange(new string[]
 				{
 					"breast",
@@ -202,7 +205,9 @@ namespace Wizard
 					"lace",
 					"skirt",
 				});
+			UniLog.Log("End list 2");
 
+			UniLog.Log("Start list 3");
 			listOfSuffixes.AddRange(new string[] {
 					"rt",
 					"_rt",
@@ -271,9 +276,13 @@ namespace Wizard
 					"001 r",
 					"001 l",
 				});
+			UniLog.Log("End list 3");
 
+			UniLog.Log("Start generate lists");
 			GenerateFullNamesList();
+			UniLog.Log("End generate lists");
 
+			UniLog.Log("Start UI");
 			// Create the UI for the wizard
 			WizardSlot.Name = "DynamicBoneChain Management Wizard";
 			WizardSlot.Tag = "Developer";
@@ -284,21 +293,27 @@ namespace Wizard
 			neosCanvasPanel.CanvasSize = new float2(800f, 900f);
 			UIBuilder uIBuilder = new UIBuilder(neosCanvasPanel.Canvas);
 			List<RectTransform> rectList = uIBuilder.SplitHorizontally(0.5f, 0.5f);
+			UniLog.Log("End UI");
 
+			UniLog.Log("Start Settings");
 			// Build left hand side UI - options and buttons.
 			UIBuilder uIBuilder2 = new UIBuilder(rectList[0].Slot);
 			Slot _layoutRoot = uIBuilder2.VerticalLayout(4f, 0f, new Alignment()).Slot;
 			uIBuilder2.FitContent(SizeFit.Disabled, SizeFit.MinSize);
 			uIBuilder2.Style.Height = 24f;
 			UIBuilder uIBuilder3 = uIBuilder2;
+			UniLog.Log("End Settings");
 
+			UniLog.Log("Start Armature");
 			// Slot reference to which changes will be applied.
 			_text = "Armature slot:";
 			uIBuilder3.Text(in _text);
 			uIBuilder3.Next("Root");
 			uIBuilder3.Current.AttachComponent<RefEditor>().Setup(ProcessRoot.Reference);
 			uIBuilder3.Spacer(24f);
+			UniLog.Log("End Armature");
 
+			UniLog.Log("Start Settings 2");
 			// Basic filtering settings for which DynamicBoneChain are accepted for changes or listing.
 			_text = "Exclude Inactive:";
 			uIBuilder3.HorizontalElementWithLabel(in _text, 0.9f, () => uIBuilder3.BooleanMemberEditor(IgnoreInactive.Value));
@@ -312,7 +327,9 @@ namespace Wizard
 			uIBuilder3.Text(in _text);
 			uIBuilder3.EnumMemberEditor(useTagMode.Value);
 			uIBuilder3.Spacer(24f);
+			UniLog.Log("End Settings 2");
 
+			UniLog.Log("Start Settings 3");
 			// Dynamic Bone Settings
 			_text = "Elasticity";
 			uIBuilder3.HorizontalElementWithLabel(in _text, 0.5f, () => uIBuilder3.PrimitiveMemberEditor(Elasticity.Value));
@@ -327,26 +344,36 @@ namespace Wizard
 			_text = "Grabbable";
 			uIBuilder3.HorizontalElementWithLabel(in _text, 0.9f, () => uIBuilder3.BooleanMemberEditor(IsGrabbable.Value));
 			uIBuilder3.Spacer(24f);
+			UniLog.Log("End Settings 3");
 
+			UniLog.Log("Start Settings 4");
 			// Buttons for batch actions.
 			_text = "List matching DynamicBoneChains";
-			uIBuilder3.Button(in _text, PopulateList);
+			uIBuilder3.Button(in _text).LocalPressed += PopulateList;
 			_text = "Remove all DynamicBoneChains";
-			uIBuilder3.Button(in _text, RemoveAllDynamicBoneChains);
+			uIBuilder3.Button(in _text).LocalPressed += RemoveAllDynamicBoneChains;
 			_text = "Attach DynamicBoneChains";
-			uIBuilder3.Button(in _text, AttachDynamicBones);
+			uIBuilder3.Button(in _text).LocalPressed += AttachDynamicBones;
 			uIBuilder3.Spacer(24f);
 			resultsText = uIBuilder3.Text(in _text);
+			UniLog.Log("End Settings 4");
 
+			UniLog.Log("Start Settings 5");
 			// Build right hand side UI - list of found DynamicBoneChain.
 			UIBuilder uIBuilder4 = new UIBuilder(rectList[1].Slot);
 			uIBuilder4.ScrollArea();
 			uIBuilder4.VerticalLayout(10f, 4f);
 			_scrollAreaRoot = uIBuilder4.FitContent(SizeFit.Disabled, SizeFit.MinSize).Slot;
+			UniLog.Log("End Settings 5");
 
+			UniLog.Log("Start Settings 6");
 			// Prepare UIBuilder for addding elements to DynamicBoneChain list.
 			_listBuilder = uIBuilder4;
 			_listBuilder.Style.MinHeight = 40f;
+			UniLog.Log("End Settings 6");
+
+			WizardSlot.PositionInFrontOfUser(float3.Backward, distance: 1f);
+			UniLog.Log("After Construction");
 		}
 
 		private void AttachDynamicBones(IButton button, ButtonEventData eventData)
@@ -358,9 +385,6 @@ namespace Wizard
 
 			WizardSlot.RunSynchronously(() =>
 			{
-				if (UpdateList)
-					GenerateFullNamesList();
-
 				if (ProcessRoot != null)
 				{
 					_count = 0;
@@ -409,7 +433,6 @@ namespace Wizard
 
 		private void GenerateFullNamesList()
 		{
-			UpdateList = false;
 			listOfFullNames.Clear();
 
 			foreach (var singleton in listOfSingletons)
@@ -540,7 +563,7 @@ namespace Wizard
 					boneChain.Enabled = false;
 					boneChain.Destroy();
 					// Implies exsistence of "boneRemoved"
-					slot.Tag = String.Empty;
+					slot.Tag = string.Empty;
 					_count++;
 				}
 			}

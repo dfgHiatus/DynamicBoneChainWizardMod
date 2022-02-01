@@ -68,7 +68,7 @@ namespace Wizard
             }
             static void Button_LocalPressed(IButton button, ButtonEventData eventData)
             {
-                DynamicBoneWizard.GetOrCreateWizard();
+                DynamicBoneWizard wiz = new DynamicBoneWizard();
                 button.Slot.GetObjectRoot().Destroy();
             }
         }
