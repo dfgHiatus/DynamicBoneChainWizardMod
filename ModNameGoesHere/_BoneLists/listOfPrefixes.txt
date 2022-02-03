@@ -1,0 +1,88 @@
+breast
+breasts
+boob
+ear
+ears
+upperear
+upper_ear
+upper-ear
+upper.ear
+upper ear
+lowerear
+lower_ear
+lower-ear
+lower.ear
+lower ear
+rear
+butt
+booty
+whisker
+whiskers
+foreheardwhisker
+foreheard_whisker
+foreheard-whisker
+foreheard.whisker
+foreheard whisker
+feather
+feathers
+wing
+wings
+armwings
+arm wings
+arm-wings
+arm_wings
+wristwings
+wrist wings
+wrist-wings
+wrist_wings
+tail
+fluff
+fur
+floof
+hair
+ponytail
+pigtail
+fronthair
+front_hair
+front-hair
+front.hair
+front hair
+backhair
+back_hair
+back-hair
+back.hair
+back hair
+bangs
+frontbangs
+backbangs
+front_bang
+back_bang
+front_bangs
+back_bangs
+front-bang
+back-bang
+front-bangs
+back-bangs
+front.bang
+back.bang
+front.bangs
+back.bangs
+front bang
+back bang
+front bangs
+back bangs
+sidebang
+sidebangs
+side_bang
+side_bangs
+side-bang
+side-bangs
+side.bang
+side.bangs
+side bang
+side bangs
+cheek
+shirt
+jacket
+lace
+skirt

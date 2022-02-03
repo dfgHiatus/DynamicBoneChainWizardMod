@@ -1,0 +1,5 @@
+DynBoneRoot
+tail
+breastupper
+leftbooty
+rightbooty

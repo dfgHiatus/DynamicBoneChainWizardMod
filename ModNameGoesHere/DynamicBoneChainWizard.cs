@@ -1,31 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using BaseX;
 using FrooxEngine;
 using FrooxEngine.UIX;
 
 namespace Wizard
 {
-	public enum UseTagMode
-	{
-		IgnoreTag,
-		IncludeOnlyWithTag,
-		ExcludeAllWithTag
-	}
-
 	public class DynamicBoneWizard
 	{
+		// Psuedo-enum
+		Dictionary<string, int> UseTagMode = new Dictionary<string, int>(){
+					{ "IgnoreTag", 1 },
+					{ "IncludeOnlyWithTag", 2},
+					{ "ExcludeAllWithTag", 3}
+				};
+
 		public static DynamicBoneWizard _Wizard;
 		public static Slot WizardSlot;
 
-		// DynBoneWizard Stuff
 		public List<string> listOfFullNames = new List<string>();
 
 		public List<string> listOfPrefixes = new List<string>();
 		public List<string> listOfSuffixes = new List<string>();
 		public List<string> listOfSingletons = new List<string>();
 
-		public ValueField<UseTagMode> useTagMode;
+		public static ValueField<bool> IgnoreInactive;
+		public static ValueField<bool> IgnoreDisabled;
+		public static ValueField<bool> IgnoreNonPersistent;
+		public static ValueField<float> Inertia;
+		public static ValueField<float> InertiaForce;
+		public static ValueField<float> Damping;
+		public static ValueField<float> Elasticity;
+		public static ValueField<float> Stiffness;
+		public static ValueField<bool> IsGrabbable;
+
+		public ValueField<int> useTagMode;
 		public ReferenceField<Slot> ProcessRoot;
 		public readonly TextField tag;
 		public readonly Text resultsText;
@@ -35,18 +45,8 @@ namespace Wizard
 		private Slot _scrollAreaRoot;
 		private UIBuilder _listBuilder;
 
-		public readonly ValueField<bool> IgnoreInactive;
-		public readonly ValueField<bool> IgnoreDisabled;
-		public readonly ValueField<bool> IgnoreNonPersistent;
-		public readonly ValueField<float> Inertia;
-		public readonly ValueField<float> InertiaForce;
-		public readonly ValueField<float> Damping;
-		public readonly ValueField<float> Elasticity;
-		public readonly ValueField<float> Stiffness;
-		public readonly ValueField<bool> IsGrabbable;
-
 		public DynamicBoneWizard()
-        {
+		{
 			UniLog.Log("Before Construction");
 			_Wizard = this;
 			UniLog.Log("Start slots");
@@ -66,208 +66,39 @@ namespace Wizard
 			Inertia = Data.AddSlot("Inertia").AttachComponent<ValueField<float>>();
 			Inertia.Value.Value = 0.2f;
 			InertiaForce = Data.AddSlot("InertiaForce").AttachComponent<ValueField<float>>();
-			Inertia.Value.Value = 2.0f;
+			InertiaForce.Value.Value = 2f;
 			Damping = Data.AddSlot("Damping").AttachComponent<ValueField<float>>();
-			Inertia.Value.Value = 5.0f;
+			Damping.Value.Value = 5;
 			Elasticity = Data.AddSlot("Elasticity").AttachComponent<ValueField<float>>();
-			Inertia.Value.Value = 100.0f;
+			Elasticity.Value.Value = 100f;
 			Stiffness = Data.AddSlot("Stiffness").AttachComponent<ValueField<float>>();
-			Inertia.Value.Value = 0.2f;
+			Stiffness.Value.Value = 0.2f;
 			IsGrabbable = Data.AddSlot("IsGrabbable").AttachComponent<ValueField<bool>>();
 			IsGrabbable.Value.Value = false;
 
-			useTagMode = Data.AddSlot("useTagMode").AttachComponent<ValueField<UseTagMode>>();
-			useTagMode.Value.Value = UseTagMode.IgnoreTag;
+			useTagMode = Data.AddSlot("useTagMode").AttachComponent<ValueField<int>>();
+			useTagMode.Value.Value = UseTagMode["IgnoreTag"];
 			ProcessRoot = Data.AddSlot("WizardSlot").AttachComponent<ReferenceField<Slot>>();
 			ProcessRoot.Reference.Target = null;
 			UniLog.Log("End Data");
 
+			// We're assuming all files are accounted for
 			UniLog.Log("Start list 1");
-			listOfSingletons.AddRange(new string[]
-			{
-					"<DynBone>",
-					"tail",
-					"breastupper",
-					"leftbooty",
-					"rightbooty"
-			});
+			var logFile = File.ReadAllLines(Path.Combine("nml_mods", "_BoneLists", "listOfSingletons.txt"));
+			foreach (var s in logFile)
+				listOfSingletons.Add(s);
 			UniLog.Log("End list 1");
 
 			UniLog.Log("Start list 2");
-			listOfPrefixes.AddRange(new string[]
-				{
-					"breast",
-					"breasts",
-					"boob",
-
-					"ear",
-					"ears",
-					"upperear",
-					"upper_ear",
-					"upper-ear",
-					"upper.ear",
-					"upper ear",
-					"lowerear",
-					"lower_ear",
-					"lower-ear",
-					"lower.ear",
-					"lower ear",
-
-					"rear",
-					"butt",
-					"booty",
-
-					"whisker",
-					"whiskers",
-					"foreheardwhisker",
-					"foreheard_whisker",
-					"foreheard-whisker",
-					"foreheard.whisker",
-					"foreheard whisker",
-
-					"feather",
-					"feathers",
-
-					"wing",
-					"wings",
-					"armwings",
-					"arm wings",
-					"arm-wings",
-					"arm_wings",
-					"wristwings",
-					"wrist wings",
-					"wrist-wings",
-					"wrist_wings",
-
-					"tail",
-
-					"fluff",
-					"fur",
-					"floof",
-
-					"hair",
-					"ponytail",
-					"pigtail",
-
-					"fronthair",
-					"front_hair",
-					"front-hair",
-					"front.hair",
-					"front hair",
-
-					"backhair",
-					"back_hair",
-					"back-hair",
-					"back.hair",
-					"back hair",
-
-					"bangs",
-					"frontbangs",
-					"backbangs",
-					"front_bang",
-					"back_bang",
-					"front_bangs",
-					"back_bangs",
-					"front-bang",
-					"back-bang",
-					"front-bangs",
-					"back-bangs",
-					"front.bang",
-					"back.bang",
-					"front.bangs",
-					"back.bangs",
-					"front bang",
-					"back bang",
-					"front bangs",
-					"back bangs",
-					"sidebang",
-					"sidebangs",
-					"side_bang",
-					"side_bangs",
-					"side-bang",
-					"side-bangs",
-					"side.bang",
-					"side.bangs",
-					"side bang",
-					"side bangs",
-
-					"cheek",
-					"shirt",
-					"jacket",
-					"lace",
-					"skirt",
-				});
+			logFile = File.ReadAllLines(Path.Combine("nml_mods", "_BoneLists", "listOfPrefixes.txt"));
+			foreach (var s in logFile)
+				listOfPrefixes.Add(s);
 			UniLog.Log("End list 2");
 
 			UniLog.Log("Start list 3");
-			listOfSuffixes.AddRange(new string[] {
-					"rt",
-					"_rt",
-					".rt",
-					"-rt",
-					" rt",
-
-					"root",
-					"_root",
-					".root",
-					"-root",
-					" root",
-
-					"l",
-					".l",
-					"_l",
-					"-l",
-					" l",
-
-					"r",
-					".r",
-					"_r",
-					"-r",
-					" r",
-
-					"1",
-					".1",
-					"_1",
-					"-1",
-					" 1",
-
-					"a",
-					".a",
-					"_a",
-					"-a",
-					" a",
-
-					"a1",
-					".a1",
-					"_a1",
-					"-a1",
-					" a1",
-
-					"1.r",
-					"1.l",
-
-					"01",
-					" 01",
-					"01.r",
-					"01.l",
-					"01_r",
-					"01_l",
-					"01-r",
-					"01-l",
-					"01 r",
-					"01 l",
-
-					"001",
-					" 001",
-					"001.r",
-					"001.l",
-					"001_r",
-					"001_l",
-					"001-r",
-					"001-l",
-					"001 r",
-					"001 l",
-				});
+			logFile = File.ReadAllLines(Path.Combine("nml_mods", "_BoneLists", "listOfSuffixes.txt"));
+			foreach (var s in logFile)
+				listOfPrefixes.Add(s);
 			UniLog.Log("End list 3");
 
 			UniLog.Log("Start generate lists");
@@ -316,8 +147,13 @@ namespace Wizard
 			_text = "Tag:";
 			tag = uIBuilder3.HorizontalElementWithLabel(in _text, 0.2f, () => uIBuilder3.TextField());
 			_text = "Tag handling mode:";
+			uIBuilder3.HorizontalElementWithLabel(in _text, 0.5f, () => uIBuilder3.PrimitiveMemberEditor(useTagMode.Value));
+			_text = "1 = IgnoreTag";
 			uIBuilder3.Text(in _text);
-			uIBuilder3.EnumMemberEditor(useTagMode.Value);
+			_text = " 2 = IncludeOnlyWithTag";
+			uIBuilder3.Text(in _text);
+			_text = "3 = ExcludeAllWithTag";
+			uIBuilder3.Text(in _text);
 			uIBuilder3.Spacer(24f);
 			UniLog.Log("End Settings 2");
 
@@ -361,7 +197,7 @@ namespace Wizard
 			UniLog.Log("Start Settings 6");
 			// Prepare UIBuilder for addding elements to DynamicBoneChain list.
 			_listBuilder = uIBuilder4;
-			_listBuilder.Style.MinHeight = 40f;
+			_listBuilder.Style.MinHeight = 20f;
 			UniLog.Log("End Settings 6");
 
 			WizardSlot.PositionInFrontOfUser(float3.Backward, distance: 1f);
@@ -394,16 +230,16 @@ namespace Wizard
 		{
 			for (int i = 0; i < slot.ChildrenCount; i++)
 			{
-				if (NameCheck(slot[i].Name.ToLower())
+				if (NameCheck(slot[i].Name)
 				&& (slot[i].GetComponent<Wiggler>() == null)
 				&& !slot[i].Name.Contains("Wiggler")
-				&& !slot[i].Name.Contains("Button")
-				&& (!IgnoreInactive.Value || slot[i].IsActive)
-				&& (!IgnoreNonPersistent.Value || slot[i].IsPersistent)
+				&& !slot[i].Name.Contains("Button") // Because it gets confused with "butt"
+				&& (!IgnoreInactive.Value.Value || slot[i].IsActive)
+				&& (!IgnoreNonPersistent.Value.Value || slot[i].IsPersistent)
 				&&
-				((useTagMode.Value == UseTagMode.IgnoreTag)
-				|| (useTagMode.Value == UseTagMode.IncludeOnlyWithTag && slot[i].Tag == tag.TargetString)
-				|| (useTagMode.Value == UseTagMode.ExcludeAllWithTag && slot[i].Tag != tag.TargetString)))
+				((useTagMode.Value.Value == UseTagMode["IgnoreTag"])
+				|| (useTagMode.Value.Value == UseTagMode["IncludeOnlyWithTag"] && slot[i].Tag == tag.TargetString)
+				|| (useTagMode.Value.Value == UseTagMode["ExcludeAllWithTag"] && slot[i].Tag != tag.TargetString)))
 				{
 					var boneChain = slot[i].AttachComponent<DynamicBoneChain>();
 					boneChain.Elasticity.Value = Elasticity.Value;
@@ -445,23 +281,9 @@ namespace Wizard
 		{
 			foreach (var item in listOfFullNames)
 			{
-				if (slotCanidateName.StartsWith(item))
+				if (slotCanidateName.StartsWith("<DynBone>") || slotCanidateName.ToLower().StartsWith(item))
 				{
 					return true;
-
-					/* Dated 
-					bool lengthCheck = true;
-					for (int len = 0; len < item.Length; len++)
-					{
-						if (name[len] != item[len])
-						{
-							lengthCheck = false;
-						}
-					}
-					if (lengthCheck)
-					{
-						return true;
-					}*/
 				}
 			}
 			return false;
@@ -493,9 +315,8 @@ namespace Wizard
 			_listBuilder2.NestInto(_elementRoot);
 			_listBuilder2.VerticalLayout(4f, 4f);
 			_listBuilder2.HorizontalLayout(10f);
-			// Dated?
 			_buttonColor = new color(1f, 1f, 1f);
-			_listBuilder2.NestOut();
+			// _listBuilder2.NestOut();
 			_listBuilder2.NestOut();
 			_listBuilder2.Current.AttachComponent<RefEditor>().Setup(_refField.Reference);
 		}
@@ -506,12 +327,12 @@ namespace Wizard
 			{
 				foreach (DynamicBoneChain componentsInChild in ProcessRoot.Reference.Target.GetComponentsInChildren<DynamicBoneChain>(delegate (DynamicBoneChain mc)
 				{
-					return (!IgnoreInactive.Value || mc.Slot.IsActive)
-					&& (!IgnoreDisabled.Value || mc.Enabled)
-					&& (!IgnoreNonPersistent.Value || mc.IsPersistent)
-					&& ((useTagMode.Value == UseTagMode.IgnoreTag)
-					|| (useTagMode.Value == UseTagMode.IncludeOnlyWithTag && mc.Slot.Tag == tag.TargetString)
-					|| (useTagMode.Value == UseTagMode.ExcludeAllWithTag && mc.Slot.Tag != tag.TargetString));
+					return (!IgnoreInactive.Value.Value || mc.Slot.IsActive)
+					&& (!IgnoreDisabled.Value.Value || mc.Enabled)
+					&& (!IgnoreNonPersistent.Value.Value || mc.IsPersistent)
+					&& ((useTagMode.Value.Value == UseTagMode["IgnoreTag"])
+					|| (useTagMode.Value.Value == UseTagMode["IncludeOnlyWithTag"] && mc.Slot.Tag == tag.TargetString)
+					|| (useTagMode.Value.Value == UseTagMode["ExcludeAllWithTag"] && mc.Slot.Tag != tag.TargetString));
 				}))
 				{
 					process(componentsInChild);
@@ -554,8 +375,7 @@ namespace Wizard
 				{
 					boneChain.Enabled = false;
 					boneChain.Destroy();
-					// Implies exsistence of "boneRemoved"
-					slot.Tag = string.Empty;
+					slot.Tag = string.Empty; // Implies exsistence of "boneRemoved"
 					_count++;
 				}
 			}
