@@ -18,3 +18,5 @@ The DynamicBoneWizardMod creates a folder called `_BoneLists` in `nml_mods`. Ins
 At a high level, the mod creates a master list comprised of all the elements of "listOfSingletons", followed by a prefix (from listOfPrefixes) with every suffix (from listOfSuffixes) appended to it. You can edit these in real-time while the game engine is running to add custom bone names to your liking. If you'd like to add bone names to this repository, feel free to open a pull request!
 
 Thanks to all those who helped me create and test my mod. Have fun!
+
+## And a big thanks to FirrSkunk for sponsoring me and my projects!
