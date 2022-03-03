@@ -18,11 +18,11 @@ butt
 booty
 whisker
 whiskers
-foreheardwhisker
-foreheard_whisker
-foreheard-whisker
-foreheard.whisker
-foreheard whisker
+foreheadwhisker
+forehead_whisker
+forehead-whisker
+forehead.whisker
+forehead whisker
 feather
 feathers
 wing

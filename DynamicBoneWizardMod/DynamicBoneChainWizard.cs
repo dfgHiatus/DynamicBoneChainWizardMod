@@ -153,7 +153,7 @@ namespace Wizard
 
 			// Buttons for batch actions.
 			_text = "List matching DynamicBoneChains";
-			uIBuilder3.Button(in _text).LocalPressed += PopulateList;
+			uIBuilder3.Button(in _text).LocalPressed += ListDynamicBones;
 			_text = "Remove all DynamicBoneChains";
 			uIBuilder3.Button(in _text).LocalPressed += RemoveAllDynamicBoneChains;
 			_text = "Attach DynamicBoneChains";
@@ -185,11 +185,25 @@ namespace Wizard
 			{
 				if (ProcessRoot != null)
 				{
+					PopulateList();
 					_count = 0;
 					recursion(ProcessRoot.Reference.Target);
-
-					PopulateList();
 					ShowResults(_count + " DynamicBoneChains attached!");
+
+				}
+				else ShowResults("No target root slot set.");
+			});
+		}
+
+		private void ListDynamicBones(IButton button, ButtonEventData eventData)
+		{
+			WizardSlot.RunSynchronously(() =>
+			{
+				if (ProcessRoot != null)
+				{
+					_count = 0;
+					PopulateList();
+					ShowResults(_count + " DynamicBoneChains found!");
 
 				}
 				else ShowResults("No target root slot set.");
@@ -252,7 +266,7 @@ namespace Wizard
 		{
 			foreach (var item in listOfFullNames)
 			{
-				if (slotCanidateName.StartsWith("<DynBone>") || slotCanidateName.ToLower().Contains(item))
+				if (slotCanidateName.StartsWith("DynBone") || slotCanidateName.ToLower().Contains(item.ToLower()))
 				{
 					return true;
 				}
@@ -302,10 +316,11 @@ namespace Wizard
 					&& (!IgnoreDisabled.Value.Value || mc.Enabled)
 					&& (!IgnoreNonPersistent.Value.Value || mc.IsPersistent)
 					&& ((useTagMode.Value.Value == UseTagMode["IgnoreTag"])
-					|| (useTagMode.Value.Value == UseTagMode["IncludeOnlyWithTag"] && mc.Slot.Tag == tag.TargetString)
-					|| (useTagMode.Value.Value == UseTagMode["ExcludeAllWithTag"] && mc.Slot.Tag != tag.TargetString));
+					|| (useTagMode.Value.Value == UseTagMode["IncludeOnlyWithTag"] && mc.Slot.Tag.ToLower() == tag.TargetString.ToLower())
+					|| (useTagMode.Value.Value == UseTagMode["ExcludeAllWithTag"] && mc.Slot.Tag.ToLower() != tag.TargetString.ToLower()));
 				}))
 				{
+					_count++;
 					process(componentsInChild);
 				}
 			}
